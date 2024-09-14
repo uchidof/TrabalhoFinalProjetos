@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package log;
 
 import java.io.File;
@@ -11,7 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import model.Log;
-import adapter.LogAdapter; // Vindo da Dependencia
+import adapter.LogAdapter;
 import properties.Configuracao;
 import service.Sessao;
 
@@ -19,76 +14,106 @@ import service.Sessao;
  * Adaptador de log para usar LogAdapter.
  */
 public class LogAdaptador {
-    private LogAdapter log;
+    private LogAdapter logAdapter;
     private static LogAdaptador instancia = null;
-    
+
+    // Construtor privado (Singleton)
     private LogAdaptador() {
-        this.log = criarLogAdapter();
+        this.logAdapter = criarLogAdapter();
+    }
+
+    /**
+     * Método para criar o LogAdapter correto com base na configuração.
+     * O padrão Adapter é aplicado aqui para adaptar diferentes formatos (CSV, JSON) para a mesma interface LogAdapter.
+     */
+    private LogAdapter criarLogAdapter() {
+    Configuracao configuracao = Configuracao.getInstancia();
+    String tipoLog = configuracao.getProperties("LOG"); // Nome do adaptador
+    
+    String caminhoArquivo = null; //= configuracao.getProperties("LOG_FILE_PATH"); // Caminho do arquivo de log
+    switch (tipoLog) {
+        case "adapter.LogAdapterJSON":
+            caminhoArquivo = "logs/logs.json"; // Define o caminho para JSON
+            break;
+        case "adapter.LogAdapterCSV":
+            caminhoArquivo = "logs/logs.csv"; // Define o caminho para CSV
+            break;
+        default:
+            throw new IllegalArgumentException("Formato de log desconhecido: " + tipoLog);
+    }
+
+    // Verifica se o caminho do arquivo está presente
+    if (caminhoArquivo == null || caminhoArquivo.isEmpty()) {
+        throw new RuntimeException("Erro: Caminho do arquivo de log não especificado nas configurações.");
     }
     
-    private LogAdapter criarLogAdapter() {
-    Configuracao configuracao = Configuracao.getInstancia();    
-    String nomeClasse = configuracao.getProperties("LOG");   // Nome da classe concreta, por exemplo "adapter.LogAdapterCSV"
     
+
+    File arquivo = new File(caminhoArquivo);
+
+    // Verificar se o diretório existe, se não, cria
+    File parentDir = arquivo.getParentFile();
+    if (parentDir != null && !parentDir.exists()) {
+        parentDir.mkdirs(); // Cria o diretório se ele não existir
+    }
+
+    // Verificar se o arquivo existe, se não, cria o arquivo vazio
     try {
-        // Carregar a classe concreta pelo nome obtido das propriedades
-        Class<?> classe = Class.forName(nomeClasse);
-        
-        // Verificar se essa classe é uma subclasse de LogAdapter
-        if (!LogAdapter.class.isAssignableFrom(classe)) {
-            throw new IllegalArgumentException("A classe " + nomeClasse + " não é uma subclasse de LogAdapter.");
+        if (!arquivo.exists()) {
+            arquivo.createNewFile(); // Cria o arquivo se ele não existir
         }
+    } catch (IOException e) {
+        throw new RuntimeException("Erro ao criar o arquivo de log: " + caminhoArquivo, e);
+    }
+
+    // Aqui estamos utilizando o Adapter para fazer com que diferentes formatos se ajustem à interface LogAdapter.
+    try {
+        // Carregar dinamicamente a classe de log e criar o adaptador correto
+        Class<?> classe = Class.forName(tipoLog);  // Carrega a classe da configuração (ex: adapter.LogAdapterCSV)
         
-        // Obter o arquivo de log
-        String caminhoArquivo = configuracao.getProperties("LOG_FILE_PATH"); // O caminho do arquivo CSV
-        File arquivo = new File(caminhoArquivo);
-        
-        // Instanciar o LogAdapter passando o arquivo no construtor
-        LogAdapter logAdapter = (LogAdapter) classe.getDeclaredConstructor(File.class).newInstance(arquivo);
-        
-        return logAdapter;
-    } catch (ClassNotFoundException e) {
-        throw new RuntimeException("Classe de log não encontrada: " + nomeClasse, e);
+        // Verifica se a classe é um subtipo de LogAdapter
+        if (!LogAdapter.class.isAssignableFrom(classe)) {
+            throw new IllegalArgumentException("A classe " + tipoLog + " não é uma subclasse de LogAdapter.");
+        }
+
+        // Cria uma instância do adaptador passando o arquivo de log
+        return (LogAdapter) classe.getDeclaredConstructor(File.class).newInstance(arquivo);
+
     } catch (Exception e) {
-        throw new RuntimeException("Erro ao instanciar a classe de log: " + nomeClasse, e);
+        throw new RuntimeException("Erro ao instanciar o adaptador de log: " + tipoLog, e);
     }
 }
 
-    /*
-    private LogAdapter criarLogAdapter() {
-        Configuracao configuracao = Configuracao.getInstancia();    
-        String caminhoArquivo = configuracao.getProperties("LOG");  
-            //Da properties adquire qual LOG deve ser usado
-        File arquivo = new File(caminhoArquivo);
-        
-        LogAdapter novoLog = new LogAdapterCSV(arquivo); 
-        return novoLog;
-    }
-*/
-    
-    
-    
+
+    // Método Singleton para obter a instância do LogAdaptador
     public static LogAdaptador getInstancia() {
-        if (instancia == null)
+        if (instancia == null) {
             instancia = new LogAdaptador();
-               
+        }
         return instancia;
     }
-    
+
+    /**
+     * Adiciona um log ao adaptador de logs.
+     *
+     * @param operacao A operação realizada
+     * @param mensagem A mensagem ou descrição
+     */
     public void addLog(String operacao, String mensagem) {
         String user = Sessao.getInstancia().getUserLogado().getNome();
-        
-        if (user == null) {
-            user = "";
+
+        if (user == null || user.isEmpty()) {
+            user = "Usuário desconhecido";
         }
-        
+
         // Cria um objeto Log com os dados necessários
         Log logEntry = new Log(operacao, mensagem, LocalDate.now().atTime(LocalTime.now()), user);
-        
+
         try {
-            log.escrever(logEntry); // Escreve o log no arquivo CSV
+            logAdapter.escrever(logEntry);  // Escreve o log no arquivo através do adaptador
         } catch (IOException e) {
-            e.printStackTrace(); // Trata exceções de I/O
+            System.err.println("Erro ao escrever o log: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

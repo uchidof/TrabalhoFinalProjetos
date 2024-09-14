@@ -44,7 +44,7 @@ public class LoginPresenter {
                 try{
                     autenticarLogin();  //Autenticacao do Login
                 }catch(Exception e){
-                    mostrarMensagem(e.getMessage(), "Erro em configurar  Login", 0);
+                    mostrarMensagem(e.getMessage(), "Erro em configurar Login", 0);
                 }
             }
         });
