@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package presenter;
 
 import java.awt.event.ActionEvent;
@@ -16,118 +11,130 @@ import service.GerenciaUserService;
 import service.Sessao;
 import view.ConfiguracaoView;
 
-
-
 /**
- *
- * @author Fpc
+ * Classe responsável por gerenciar a interface de configuração da aplicação.
  */
 public class ConfiguracaoPresenter {
-    private User userLogado;
-    private ConfiguracaoView view;
-    private GerenciaUserService service;
-    
+    private User userLogado;  // Usuário logado atualmente
+    private ConfiguracaoView view;  // A vista (interface gráfica) que será apresentada
+    private GerenciaUserService service;  // Serviço de gerenciamento de usuários
+
+    // Construtor
     public ConfiguracaoPresenter() {
-        this.view = new ConfiguracaoView();
-        this.service = new GerenciaUserService();
-        this.userLogado = Sessao.getInstancia().getUserLogado();
-        configurar();
+        this.view = new ConfiguracaoView();  // Inicializa a view
+        this.service = new GerenciaUserService();  // Inicializa o serviço de gerenciamento de usuários
+        this.userLogado = Sessao.getInstancia().getUserLogado();  // Obtém o usuário logado da sessão
+        configurar();  // Chama o método para configurar a interface
     }
-    
-    private void configurar(){
-        view.setVisible(false);
-        view.getTextFieldNome().setText(userLogado.getNome());
-        view.getTextFieldDataCadastro().setText(userLogado.getDtCadastro());
-        view.getBtnExcluir().setVisible(false);
-        view.getLabelSenhaAtual().setVisible(false);
-        view.getLabelNovaSenha().setVisible(false);
-        view.getLabelConfirmaSenha().setVisible(false);
-        view.getTextFieldSenhaAtual().setVisible(false);
-        view.getTextFieldNovaSenha().setVisible(false);
-        view.getTextFieldConfirmaSenha().setVisible(false);
-        view.getTextFieldNome().setEnabled(false);
-        view.getTextFieldDataCadastro().setEnabled(false);
-        view.getLabelLog().setVisible(false);
-        view.getBoxLog().setVisible(false);
-        
+
+    // Método responsável por configurar os componentes da interface
+    private void configurar() {
+        view.setVisible(false);  // Deixa a janela invisível inicialmente
+        view.getTextFieldNome().setText(userLogado.getNome());  // Define o nome do usuário logado no campo de texto
+        view.getTextFieldDataCadastro().setText(userLogado.getDtCadastro());  // Define a data de cadastro do usuário
+        view.getBtnExcluir().setVisible(false);  // Oculta o botão "Excluir"
+        view.getLabelSenhaAtual().setVisible(false);  // Oculta o rótulo "Senha Atual"
+        view.getLabelNovaSenha().setVisible(false);  // Oculta o rótulo "Nova Senha"
+        view.getLabelConfirmaSenha().setVisible(false);  // Oculta o rótulo "Confirma Senha"
+        view.getTextFieldSenhaAtual().setVisible(false);  // Oculta o campo "Senha Atual"
+        view.getTextFieldNovaSenha().setVisible(false);  // Oculta o campo "Nova Senha"
+        view.getTextFieldConfirmaSenha().setVisible(false);  // Oculta o campo "Confirma Senha"
+        view.getTextFieldNome().setEnabled(false);  // Desabilita o campo "Nome"
+        view.getTextFieldDataCadastro().setEnabled(false);  // Desabilita o campo "Data de Cadastro"
+        view.getLabelLog().setVisible(false);  // Oculta o rótulo "Log"
+        view.getBoxLog().setVisible(false);  // Oculta o combobox de seleção de log
+
+        // Se o usuário logado for admin, exibe o botão "Alterar Log"
         if ("admin".equals(userLogado.getTipo())) {
             view.getBtnAlterarLog().setVisible(true);
         }
-        
-        view.getBtnAlterarSenha().addActionListener(new ActionListener(){
+
+        // Adiciona um listener ao botão "Alterar Senha"
+        view.getBtnAlterarSenha().addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent evt){
-                try{
-                    alterarSenha();
-                }catch(Exception e){
-                    exibirMensagem(e.getMessage(), "Erro", 0);
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    alterarSenha();  // Chama o método para alterar a senha
+                } catch (Exception e) {
+                    exibirMensagem(e.getMessage(), "Erro", 0);  // Exibe mensagem de erro
                 }
             }
         });
-        
+
+        // Remove todos os ActionListeners do botão "Salvar"
         for (ActionListener listener : view.getBtnSalvar().getActionListeners()) {
             view.getBtnSalvar().removeActionListener(listener);
         }
-        
-        view.getBtnSalvar().addActionListener(new ActionListener(){
+
+        // Adiciona um listener ao botão "Salvar"
+        view.getBtnSalvar().addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent evt){
-                try{
-                    salvar();
-                }catch(Exception e){
-                    exibirMensagem(e.getMessage(), "Erro", 0);
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    salvar();  // Chama o método para salvar as alterações
+                } catch (Exception e) {
+                    exibirMensagem(e.getMessage(), "Erro", 0);  // Exibe mensagem de erro
                 }
             }
         });
-        
-        view.getBtnFechar().addActionListener(new ActionListener(){
+
+        // Adiciona um listener ao botão "Fechar"
+        view.getBtnFechar().addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent evt){
-                try{
-                    fechar();
-                }catch(Exception e){
-                    exibirMensagem(e.getMessage(), "Erro", 0);
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    fechar();  // Fecha a interface
+                } catch (Exception e) {
+                    exibirMensagem(e.getMessage(), "Erro", 0);  // Exibe mensagem de erro
                 }
             }
         });
-        
-        view.getBtnAlterarLog().addActionListener(new ActionListener(){
+
+        // Adiciona um listener ao botão "Alterar Log"
+        view.getBtnAlterarLog().addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent evt){
-                try{
-                    configAlterarLog();
-                }catch(Exception e){
-                    exibirMensagem(e.getMessage(), "Erro", 0);
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    configAlterarLog();  // Chama o método para alterar o tipo de log
+                } catch (Exception e) {
+                    exibirMensagem(e.getMessage(), "Erro", 0);  // Exibe mensagem de erro
                 }
             }
         });
-        
-        view.setVisible(true);
+
+        view.setVisible(true);  // Torna a janela visível novamente
     }
-    
+
+    // Método para retornar a view atual
     public ConfiguracaoView getView() {
         return view;
     }
-    
-    private void fechar(){
-        view.setVisible(false);
+
+    // Método para fechar a interface
+    private void fechar() {
+        view.setVisible(false);  // Oculta a janela
     }
-    
-    public void exibirMensagem(String mensagem, String titulo, int type){
-        JOptionPane.showMessageDialog(this.view, mensagem, titulo,type);
+
+    // Exibe uma mensagem ao usuário
+    public void exibirMensagem(String mensagem, String titulo, int type) {
+        JOptionPane.showMessageDialog(this.view, mensagem, titulo, type);  // Exibe um diálogo de mensagem
     }
-    
-    public int exibirConfirmacao(String mensagem, String titulo){
-        return JOptionPane.showConfirmDialog(null, mensagem, titulo, JOptionPane.YES_NO_OPTION);
+
+    // Exibe uma confirmação ao usuário
+    public int exibirConfirmacao(String mensagem, String titulo) {
+        return JOptionPane.showConfirmDialog(null, mensagem, titulo, JOptionPane.YES_NO_OPTION);  // Exibe um diálogo de confirmação
     }
-    
-    private void salvarNovoLog(String novoLog){
-        Configuracao.getInstancia().setProperties("LOG", novoLog);
-        exibirMensagem("Novo Log salvo!! Por favor reinicie a aplicação para a atualização.", "Log", 1);
-        fechar();
+
+    // Salva o novo tipo de log no arquivo de configuração
+    private void salvarNovoLog(String novoLog) {
+        Configuracao.getInstancia().setProperties("LOG", novoLog);  // Altera a propriedade "LOG" na configuração
+        exibirMensagem("Novo Log salvo!! Por favor reinicie a aplicação para a atualização.", "Log", 1);  // Exibe uma mensagem de sucesso
+        fechar();  // Fecha a interface
     }
-    
-    private void configAlterarLog(){
+
+    // Configura a interface para alterar o tipo de log
+    private void configAlterarLog() {
+        // Oculta elementos da interface
         view.getLabelNome().setVisible(false);
         view.getLabelDataCadastro().setVisible(false);
         view.getTextFieldNome().setVisible(false);
@@ -135,67 +142,79 @@ public class ConfiguracaoPresenter {
         view.getBtnAlterarSenha().setVisible(false);
         view.getBtnAlterarLog().setVisible(false);
 
-        view.getBoxLog().removeAllItems();
-        
+        view.getBoxLog().removeAllItems();  // Remove os itens atuais do combobox
+
+        // Obtém as opções de log da configuração e adiciona ao combobox
         String tiposProperties = Configuracao.getInstancia().getProperties("LOGAVALIABLE");
         ArrayList<String> tiposConverter = new ArrayList<>();
-       
-        for (String item : tiposProperties.split("OR")) {
+
+        for (String item : tiposProperties.split("OR")) {  // Divide as opções por "OR"
             tiposConverter.add(item);
         }
-        
-        for(String elem: tiposConverter){
-            view.getBoxLog().addItem(elem);
+
+        for (String elem : tiposConverter) {
+            view.getBoxLog().addItem(elem);  // Adiciona cada opção ao combobox
         }
-        
+
+        // Remove listeners antigos do botão "Salvar"
         for (ActionListener listener : view.getBtnSalvar().getActionListeners()) {
             view.getBtnSalvar().removeActionListener(listener);
         }
 
-        view.getBtnSalvar().addActionListener(new ActionListener(){
+        // Adiciona um novo listener ao botão "Salvar"
+        view.getBtnSalvar().addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent evt){
-                try{
-                    String novoLog = view.getBoxLog().getSelectedItem().toString();
-                    salvarNovoLog(novoLog);
-                }catch(Exception e){
-                    exibirMensagem(e.getMessage(), "Erro", 0);
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    // Obtém o valor selecionado no ComboBox e concatena com "adapter.LogAdapter"
+                    String logSelecionado = view.getBoxLog().getSelectedItem().toString();  // Lê o valor selecionado (ex: CSV ou JSON)
+                    String novoLog = "adapter.LogAdapter" + logSelecionado;  // Concatena "adapter.LogAdapter" com o valor selecionado
+                    System.out.println("Log selecionado:"+ novoLog);
+                    salvarNovoLog(novoLog);  // Salva o novo tipo de log
+                    
+                    //String novoLog = view.getBoxLog().getSelectedItem().toString();  // Obtém o log selecionado
+                    //salvarNovoLog(novoLog);  // Salva o novo tipo de log
+                } catch (Exception e) {
+                    exibirMensagem(e.getMessage(), "Erro", 0);  // Exibe mensagem de erro
                 }
             }
         });
-        
+
+        // Torna visíveis os elementos relacionados à alteração de log
         view.getLabelLog().setVisible(true);
         view.getBoxLog().setVisible(true);
     }
-    
-    private void alterarSenha(){
-        view.getBtnAlterarSenha().setVisible(false);
-        view.getLabelSenhaAtual().setVisible(true);
-        view.getLabelNovaSenha().setVisible(true);
-        view.getLabelConfirmaSenha().setVisible(true);
-        view.getTextFieldSenhaAtual().setVisible(true);
-        view.getTextFieldNovaSenha().setVisible(true);
-        view.getTextFieldConfirmaSenha().setVisible(true);
+
+    // Método para exibir os campos de alteração de senha
+    private void alterarSenha() {
+        view.getBtnAlterarSenha().setVisible(false);  // Oculta o botão "Alterar Senha"
+        view.getLabelSenhaAtual().setVisible(true);  // Exibe o rótulo "Senha Atual"
+        view.getLabelNovaSenha().setVisible(true);  // Exibe o rótulo "Nova Senha"
+        view.getLabelConfirmaSenha().setVisible(true);  // Exibe o rótulo "Confirma Senha"
+        view.getTextFieldSenhaAtual().setVisible(true);  // Exibe o campo "Senha Atual"
+        view.getTextFieldNovaSenha().setVisible(true);  // Exibe o campo "Nova Senha"
+        view.getTextFieldConfirmaSenha().setVisible(true);  // Exibe o campo "Confirma Senha"
     }
 
-        private void salvar(){
-        String nome = Sessao.getInstancia().getUserLogado().getNome();
-        String senha = Sessao.getInstancia().getUserLogado().getSenha();
-        String senhaAtual = view.getTextFieldSenhaAtual().getText();
-        String novaSenha = view.getTextFieldNovaSenha().getText();
-        String confirmaSenha = view.getTextFieldConfirmaSenha().getText();
-          
-        if(!senha.equals(senhaAtual)){
+    // Método para salvar a nova senha do usuário
+    private void salvar() {
+        String nome = Sessao.getInstancia().getUserLogado().getNome();  // Obtém o nome do usuário logado
+        String senha = Sessao.getInstancia().getUserLogado().getSenha();  // Obtém a senha atual
+        String senhaAtual = view.getTextFieldSenhaAtual().getText();  // Obtém o valor do campo "Senha Atual"
+        String novaSenha = view.getTextFieldNovaSenha().getText();  // Obtém o valor do campo "Nova Senha"
+        String confirmaSenha = view.getTextFieldConfirmaSenha().getText();  // Obtém o valor do campo "Confirma Senha"
+
+        if (!senha.equals(senhaAtual)) {  // Verifica se a senha atual está correta
             throw new RuntimeException("Senha atual incorreta!");
         }
-        
-        if(!novaSenha.equals(confirmaSenha)){
+
+        if (!novaSenha.equals(confirmaSenha)) {  // Verifica se as novas senhas coincidem
             throw new RuntimeException("Novas senhas não conferem");
         }
-        
-        service.alterarSenha(nome, novaSenha);
-        exibirMensagem("Sua senha foi alterada com sucesso!", "Alteracao de Senha", 1);
-        configurar();
+
+        service.alterarSenha(nome, novaSenha);  // Chama o serviço para alterar a senha
+        exibirMensagem("Sua senha foi alterada com sucesso!", "Alteracao de Senha", 1);  // Exibe mensagem de sucesso
+        configurar();  // Reconfigura a interface
     }
 
 }

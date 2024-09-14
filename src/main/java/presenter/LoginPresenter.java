@@ -55,7 +55,7 @@ public class LoginPresenter {
                 //Se o botao de cadastro foi clicado
                 try{
                     CadastroPresenter cadastro = new CadastroPresenter();
-                    view.getLabelTextCadastro().setForeground(Color.green);
+                    view.getLabelTextCadastro().setForeground(Color.blue);
                 }catch(Exception e){
                     throw new RuntimeException(e.getMessage());
                 }
