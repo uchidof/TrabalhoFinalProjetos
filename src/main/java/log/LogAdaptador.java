@@ -30,18 +30,20 @@ public class LogAdaptador {
     Configuracao configuracao = Configuracao.getInstancia();
     String tipoLog = configuracao.getProperties("LOG"); // Nome do adaptador
     
-    String caminhoArquivo = null; //= configuracao.getProperties("LOG_FILE_PATH"); // Caminho do arquivo de log
-    switch (tipoLog) {
-        case "adapter.LogAdapterJSON":
-            caminhoArquivo = "logs/logs.json"; // Define o caminho para JSON
-            break;
-        case "adapter.LogAdapterCSV":
-            caminhoArquivo = "logs/logs.csv"; // Define o caminho para CSV
-            break;
-        default:
-            throw new IllegalArgumentException("Formato de log desconhecido: " + tipoLog);
-    }
-
+    String completa = tipoLog;
+    String chave = "adapter.LogAdapter";
+    // Encontrar a posição da string chave
+    int posicao = completa.indexOf(chave);
+        
+        
+    String resultado = completa.substring(posicao + chave.length()).trim();
+    // Converter a substring para letras minúsculas
+    resultado = resultado.toLowerCase();            
+        
+    String caminhoArquivo = "logs."+resultado;
+    //System.out.println(caminhoArquivo);
+    
+    
     // Verifica se o caminho do arquivo está presente
     if (caminhoArquivo == null || caminhoArquivo.isEmpty()) {
         throw new RuntimeException("Erro: Caminho do arquivo de log não especificado nas configurações.");
